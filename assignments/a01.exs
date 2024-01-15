@@ -30,3 +30,23 @@ IO.puts("Reversed: #{reversed_user_input}")
 
 replaced_foo = String.replace(user_input, "foo", "bar")
 IO.puts(("Replaced foo with bar: #{replaced_foo}"))
+
+
+#------------------------------------
+# Part 4
+#------------------------------------
+multiply_3_nums = fn a, b, c -> a*b*c end
+
+num_1 = IO.gets("Enter number 1: ") |> String.trim() |> String.to_integer()
+num_2 = IO.gets("Enter number 2: ") |> String.trim() |> String.to_integer()
+num_3 = IO.gets("Enter number 3: ") |> String.trim() |> String.to_integer()
+IO.puts("multiply_3_nums(#{num_1}, #{num_2}, #{num_3}): #{multiply_3_nums.(num_1, num_2, num_3)}")
+
+
+concat_2_lists = fn l1, l2 -> l1 ++ l2 end
+
+IO.puts(concat_2_lists.([1, 3, 4, 255], [1, 5, 883]))
+
+initial_tuple = {:ok, :fail}
+initial_tuple = Tuple.append(initial_tuple,:cancelled)
+IO.inspect(initial_tuple)
