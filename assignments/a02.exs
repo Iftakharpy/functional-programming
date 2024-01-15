@@ -16,15 +16,22 @@ defmodule PigLatin do
     phrase
     |> String.split(" ")
     |> Enum.map(fn word ->
-      IO.inspect(classify_word_begining(word))
+      IO.inspect(classify_word_beginning(word))
     end)
   end
 
-
   def pig_latinize_word(word, clasification) do
+    case clasification do
+      {:vowel, vowel} ->
+        fn _ -> nil end
 
+      {:consonent, consonent} ->
+        fn _ -> nil end
+
+      _ ->
+        fn _ -> nil end
+    end
   end
-
 
   def classify_word_beginning(word) do
     consonent = get_starting_consonent_sequence(word)
@@ -112,6 +119,5 @@ defmodule PigLatin do
     end)
   end
 end
-
 
 PigLatin.pig_latinize(given_phrase)
