@@ -5,12 +5,10 @@ given_string = "99 bottles of beer on the wall"
 word_count = String.split(given_string, " ") |> Enum.count()
 IO.puts("Number of words in \"#{given_string}\" string is #{word_count}")
 
+
 # -----------------------------------------------------
 # Part 2
 # -----------------------------------------------------
-given_phrase =
-  "Pattern Matching with Elixir. Remember that equals sign is a match operator, not an assignment"
-
 defmodule PigLatin do
 
   @doc """
@@ -157,5 +155,9 @@ defmodule PigLatin do
     end)
   end
 end
+
+
+
+given_phrase = "Pattern Matching with Elixir. Remember that equals sign is a match operator, not an assignment"
 
 IO.puts(PigLatin.pig_latinize(given_phrase))
