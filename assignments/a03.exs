@@ -3,26 +3,40 @@
 # -----------------------------------------------------
 num_1 = IO.gets("Enter a number: ") |> String.trim() |> String.to_integer()
 
-if rem(num_1, 3) == 0 do
-  IO.puts("The number is evenly divisible by 3")
-else
-  if rem(num_1, 5) == 0 do
+# if rem(num_1, 3) == 0 do
+#   IO.puts("The number is evenly divisible by 3")
+# else
+#   if rem(num_1, 5) == 0 do
+#     IO.puts("The number is evenly divisible by 5")
+#   else
+#     if rem(num_1, 7) == 0 do
+#       IO.puts("The number is evenly divisible by 7")
+#     else
+#       divisor = Enum.find(2..num_1, fn x -> rem(num_1, x) == 0 end)
+#       IO.puts("The number is evenly divisible by #{divisor}")
+#     end
+#   end
+# end
+
+# cleaner version
+cond do
+  rem(num_1, 3) == 0 ->
+    IO.puts("The number is evenly divisible by 3")
+  rem(num_1, 5) == 0 ->
     IO.puts("The number is evenly divisible by 5")
-  else
-    if rem(num_1, 7) == 0 do
-      IO.puts("The number is evenly divisible by 7")
-    else
-      divisor = Enum.find(2..num_1, fn x -> rem(num_1, x) == 0 end)
-      IO.puts("The number is evenly divisible by #{divisor}")
-    end
-  end
+  rem(num_1, 7) == 0 ->
+    IO.puts("The number is evenly divisible by 7")
+  true ->
+    divisor = Enum.find(2..num_1, fn x -> rem(num_1, x) == 0 end)
+    IO.puts("The number is evenly divisible by #{divisor}")
 end
+
 
 # -----------------------------------------------------
 # Part 2
 # -----------------------------------------------------
-add = fn a, b when is_bitstring(a) and is_bitstring(b) ->
-  a <> b
+add = fn a, b when
+  is_bitstring(a) and is_bitstring(b) -> a <> b
   a, b -> a + b
 end
 
