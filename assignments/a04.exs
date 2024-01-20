@@ -155,7 +155,7 @@ commands = %{
     end
   },
   quit: %{
-    description: "exits the loop.",
+    description: "quits the program.",
     fn: fn _command, isbn_books_map ->
       exit(:shutdown)
       isbn_books_map
