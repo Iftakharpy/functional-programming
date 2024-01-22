@@ -45,7 +45,7 @@ IO.puts("multiply_3_nums(#{num_1}, #{num_2}, #{num_3}): #{multiply_3_nums.(num_1
 
 concat_2_lists = fn l1, l2 -> l1 ++ l2 end
 
-IO.puts(concat_2_lists.([1, 3, 4, 255], [1, 5, 883]))
+IO.inspect(concat_2_lists.([1, 3, 4, 255], [1, 5, 883]))
 
 initial_tuple = {:ok, :fail}
 initial_tuple = Tuple.append(initial_tuple,:cancelled)

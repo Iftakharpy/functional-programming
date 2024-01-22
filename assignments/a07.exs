@@ -39,7 +39,9 @@ end
 
 defmodule Blackjack do
   def start() do
-    spawn(__MODULE__, fn state -> loop(state) end, [])
+    spawn(__MODULE__, fn state -> loop(state) end, %{
+
+    })
   end
 
   def loop(state) do
