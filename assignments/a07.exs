@@ -1,3 +1,32 @@
+@doc """
+Assignment 7: Blackjack
+
+Blackjack is implemented as a simple text-based game. Dealer and Player
+modules are implemented as processes. The game is started by calling
+BlackjackGame.start_game().
+
+Player can choose to hit or stand. Dealer must hit until score is 17 or higher.
+Ace can be 1 or 11, the score will be in player's favor.
+
+
+At first the dealer deals two cards to the player and two cards to himself.
+All cards are visible to the player including dealer's cards.
+
+The, dealer asks player to hit or stand. Until player stands, or busts.
+If player busts, dealer wins. If player stands, dealer must hit until dealer's
+score is 17 or higher. If dealer busts, player wins. Otherwise, the one with
+higher score wins. If scores are equal, it's a tie.
+
+Dealer is responsible for dealing cards, validating the game state and
+managing the game state.
+
+Player is responsible for asking player to hit or stand. And sending the choice
+to the dealer.
+
+BlackjackGame is responsible for initializing and shutting down the
+Player and Dealer processes.
+"""
+
 defmodule Card do
   @enforce_keys [:rank, :suit]
   defstruct rank: nil, suit: nil
@@ -83,6 +112,9 @@ defmodule Dealer do
           {[card | _], remaining_cards} = state.current_shoe |> Enum.split(1)
           %{state | dealer_hand: [card | state.dealer_hand], current_shoe: remaining_cards}
 
+        {:stop_loop} ->
+          nil
+
         {:validate_game} ->
           cond do
             not state.dealers_turn? ->
@@ -143,9 +175,6 @@ defmodule Dealer do
                   :game_ended
               end
           end
-
-        {:stop_loop} ->
-          nil
       end
 
     case new_state do
@@ -308,6 +337,7 @@ defmodule BlackjackGame do
     # Wait for processes to finish
     loop_while(fn -> Process.alive?(player_pid) and Process.alive?(dealer_pid) end)
 
+    # If any of the processes are still alive, stop them
     cond do
       Process.alive?(player_pid) -> Player.stop_loop()
       Process.alive?(dealer_pid) -> Dealer.stop_loop()
