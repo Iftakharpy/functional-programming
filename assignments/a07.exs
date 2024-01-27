@@ -34,6 +34,7 @@ defmodule Dealer do
   def start_loop() do
     dealer_pid = spawn_link(&loop/0)
     Process.register(dealer_pid, :dealer_process)
+    send(:dealer_process, {:validate_game})
     dealer_pid
   end
 
@@ -61,103 +62,120 @@ defmodule Dealer do
 
   @spec loop(state()) :: nil
   def loop(state) do
-    player_score = calculate_score(state.player_hand)
-
-    state =
-      cond do
-        state.dealers_turn? and should_dealer_hit?(state.dealer_hand) ->
-          send(:dealer_process, {:deal_card, :to_dealer})
-          state
-
-        not state.dealers_turn? and not (player_score > 21) ->
-          send(:player_process, {:player_turn})
-          state
-
-        not state.dealers_turn? and player_score > 21 ->
-          %{state | dealers_turn?: true}
-
-        true ->
-          state
-      end
-
     new_state =
       receive do
-        {:player_stand} ->
-          %{state | dealers_turn?: true}
-
         {:deal_card, :to_player} ->
-          [top_card | rest] = state.current_shoe
-          %{state | current_shoe: rest, player_hand: [top_card | state.player_hand]}
+          {[card | _], remaining_cards} = state.current_shoe |> Enum.split(1)
+
+          state = %{
+            state
+            | player_hand: [card | state.player_hand],
+              current_shoe: remaining_cards
+          }
+
+          if calculate_score(state.player_hand) > 21 do
+            %{state | dealers_turn?: true}
+          else
+            state
+          end
 
         {:deal_card, :to_dealer} ->
-          [top_card | rest] = state.current_shoe
-          %{state | current_shoe: rest, dealer_hand: [top_card | state.dealer_hand]}
+          {[card | _], remaining_cards} = state.current_shoe |> Enum.split(1)
+          %{state | dealer_hand: [card | state.dealer_hand], current_shoe: remaining_cards}
+
+        {:validate_game} ->
+          cond do
+            not state.dealers_turn? ->
+              IO.puts("Dealer's hand: #{hand_to_string(state.dealer_hand)}")
+              IO.puts("Player's hand: #{hand_to_string(state.player_hand)}")
+              send(:player_process, {:players_turn})
+
+              updated_state =
+                receive do
+                  {:player_plays, :hit} ->
+                    send(:dealer_process, {:deal_card, :to_player})
+                    state
+
+                  {:player_plays, :stand} ->
+                    %{state | dealers_turn?: true}
+                end
+
+              send(:dealer_process, {:validate_game})
+              updated_state
+
+            state.dealers_turn? ->
+              case game_result(state.dealer_hand, state.player_hand) do
+                {:game_continues, _} ->
+                  if should_dealer_hit?(state.dealer_hand) do
+                    send(:dealer_process, {:deal_card, :to_dealer})
+                  end
+
+                  send(:dealer_process, {:validate_game})
+                  state
+
+                {:game_ends, result} ->
+                  IO.puts("")
+                  IO.puts("---------------- Game result ----------------")
+                  IO.puts("Dealer's hand: #{hand_to_string(state.dealer_hand)}")
+                  IO.puts("Player's hand: #{hand_to_string(state.player_hand)}")
+                  IO.puts("")
+
+                  case result do
+                    :player_busts ->
+                      IO.puts("Player busts, dealer wins!")
+
+                    :dealer_busts ->
+                      IO.puts("Dealer busts, player wins!")
+
+                    :tie ->
+                      IO.puts("It's a tie!")
+
+                    :player_wins ->
+                      IO.puts("Player wins!")
+
+                    :dealer_wins ->
+                      IO.puts("Dealer wins!")
+                  end
+
+                  IO.puts("---------------------------------------------")
+                  IO.puts("")
+
+                  :game_ended
+              end
+          end
 
         {:stop_loop} ->
           nil
-
-        {:show_hands, to_process} ->
-          IO.puts("")
-          IO.puts("Dealer's #{hand_to_string(state.dealer_hand)}")
-          IO.puts("Player's #{hand_to_string(state.player_hand)}")
-          IO.puts("")
-          send(to_process, {:hands_shown})
-          state
       end
 
     case new_state do
       nil ->
-        :ok
+        nil
+
+      :game_ended ->
+        play_again? =
+          IO.gets("Do you want to play again? ([y]/n): ")
+          |> String.trim()
+          |> String.downcase()
+
+        play_again? =
+          (String.length(play_again?) == 0 && "y") || play_again?
+
+        case play_again? do
+          "y" ->
+            IO.puts("")
+            IO.puts("Starting new game...")
+            IO.puts("=============================================")
+            IO.puts("")
+            send(:dealer_process, {:validate_game})
+            loop(initial_game_state())
+
+          _ ->
+            nil
+        end
 
       _ ->
-        case game_result(new_state.dealer_hand, new_state.player_hand) do
-          {:game_continues, :dealer_must_hit} ->
-            loop(new_state)
-
-          {:game_ends, result} ->
-            if new_state.dealers_turn? do
-              IO.puts("")
-              IO.puts("------------ Game result ------------")
-              IO.puts("Dealer's #{hand_to_string(new_state.dealer_hand)}")
-              IO.puts("Player's #{hand_to_string(new_state.player_hand)}")
-              IO.puts("")
-
-              case result do
-                :tie ->
-                  IO.puts("It's a tie!")
-
-                :dealer_busts ->
-                  IO.puts("Dealer busts, player wins!")
-
-                :player_busts ->
-                  IO.puts("Player busts, dealer wins!")
-
-                :player_wins ->
-                  IO.puts("Player wins!")
-
-                :dealer_wins ->
-                  IO.puts("Dealer wins!")
-              end
-
-              IO.puts("------------ Game ended ------------")
-              IO.puts("")
-
-              play_again? = true
-              #   IO.gets("Do you want to play again? (y/n): ")
-              # |> String.trim()
-              # |> String.downcase()
-              # |> String.starts_with?("y")
-
-              if play_again? do
-                IO.puts("====================================")
-                IO.puts("Starting new game...")
-                send(:dealer_process, {:show_hands, :player_process})
-                loop(initial_game_state())
-              end
-            else
-              loop(new_state)
-            end
-        end
+        loop(new_state)
     end
   end
 
@@ -204,9 +222,9 @@ defmodule Dealer do
     "Queen" => 10,
     "King" => 10
   }
-  @spec has_ace?(list[Card.t()]) :: boolean()
-  def has_ace?(hand) do
-    Enum.any?(hand, fn card -> card.rank == "Ace" end)
+  @spec count_aces(list[Card.t()]) :: integer()
+  def count_aces(hand) do
+    Enum.count(hand, fn card -> card.rank == "Ace" end)
   end
 
   @spec calculate_score(list[Card.t()]) :: integer()
@@ -217,10 +235,19 @@ defmodule Dealer do
       |> Enum.map(&@score_map[&1])
       |> Enum.sum()
 
-    if score > 21 and has_ace?(hand) do
-      # Since an ace can be 1 or 11,
-      # we can subtract 10 to get the lower score(1) to avoid busting
-      score - 10
+    ace_count = count_aces(hand)
+
+    if ace_count > 0 do
+      Enum.reduce(1..ace_count, score, fn _, acc ->
+        if acc > 21 do
+          # Since an ace can be 1 or 11, and favours the player
+          # we have to try to not bust by using lower score 1 instead of 11
+          # lower score [11 - 10] = 1
+          acc - 10
+        else
+          acc
+        end
+      end)
     else
       score
     end
@@ -241,30 +268,31 @@ defmodule Player do
 
   def loop() do
     receive do
-      {:player_turn} ->
-        send(:dealer_process, {:show_hands, :player_process})
-        receive do
-          {:hands_shown} -> :timer.sleep(20)
-        end
+      {:players_turn} ->
+        hit_or_stand? =
+          IO.gets("Hit or stand? ([h]/s): ")
+          |> String.trim()
+          |> String.downcase()
 
-        player_choice = IO.gets("Hit or stand? (h/s): ") |> String.trim() |> String.downcase()
+        hit_or_stand? = (String.length(hit_or_stand?) == 0 && "h") || hit_or_stand?
 
-        case player_choice do
+        case hit_or_stand? do
           "h" ->
-            send(:dealer_process, {:deal_card, :to_player})
+            send(:dealer_process, {:player_plays, :hit})
+            loop()
 
           "s" ->
-            send(:dealer_process, {:player_stand})
+            send(:dealer_process, {:player_plays, :stand})
+            loop()
 
           _ ->
-            IO.puts("Invalid choice, try again.")
-            send(:player_process, {:player_turn})
+            IO.puts("Invalid input, try again.")
+            send(:player_process, {:players_turn})
+            loop()
         end
 
-        loop()
-
       {:stop_loop} ->
-        :ok
+        nil
     end
   end
 end
