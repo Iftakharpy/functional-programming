@@ -66,7 +66,7 @@ defmodule PigLatin do
     %{
       "word" => word,
       "punctuation" => punctuation
-    } = Regex.named_captures(~r/(?<word>.*?)(?<punctuation>[[:punct:]]*$)/, word)
+    } = Regex.named_captures(~r/^(?<word>.*?)(?<punctuation>[[:punct:]]*)$/, word)
 
     {word, punctuation}
   end
