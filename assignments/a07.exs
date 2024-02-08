@@ -117,8 +117,8 @@ defmodule Dealer do
         {:validate_game} ->
           cond do
             not state.dealers_turn? ->
-              IO.puts("Dealer's hand: #{hand_to_string(state.dealer_hand)}")
-              IO.puts("Player's hand: #{hand_to_string(state.player_hand)}")
+              IO.puts("Dealer's #{hand_to_string(state.dealer_hand)}")
+              IO.puts("Player's #{hand_to_string(state.player_hand)}")
               send(:player_process, {:players_turn})
 
               updated_state =
@@ -147,8 +147,8 @@ defmodule Dealer do
                 {:game_ends, result} ->
                   IO.puts("")
                   IO.puts("---------------- Game result ----------------")
-                  IO.puts("Dealer's hand: #{hand_to_string(state.dealer_hand)}")
-                  IO.puts("Player's hand: #{hand_to_string(state.player_hand)}")
+                  IO.puts("Dealer's #{hand_to_string(state.dealer_hand)}")
+                  IO.puts("Player's #{hand_to_string(state.player_hand)}")
                   IO.puts("")
 
                   case result do
