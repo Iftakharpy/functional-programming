@@ -35,7 +35,7 @@ defmodule TCPClient do
   defp server_message_loop(socket) do
     case :gen_tcp.recv(socket, 0) do
       {:ok, data} ->
-        IO.puts("#{data}")
+        IO.puts(data) # Print the message from the server
         server_message_loop(socket)
       {:error, :closed} ->
         Logger.info("Server closed the connection")

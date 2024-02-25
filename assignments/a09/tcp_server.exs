@@ -74,7 +74,7 @@ defmodule TCPServer do
         client_sockets
         |> Enum.each(fn {socket, name} ->
           if socket != client_socket do
-            write_line(socket, "#{name}: #{data}")
+            write_line(socket, "#{client_name}: #{data}")
           end
         end)
 
