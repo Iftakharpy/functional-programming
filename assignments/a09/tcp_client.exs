@@ -1,7 +1,7 @@
 defmodule TCPClient do
   require Logger
 
-  def start(host \\ ~c"127.0.0.1", port \\4000) when is_integer(port) and port>=1024 and port<=4915 do
+  def start(host \\ ~c"192.168.1.73", port \\4000) when is_integer(port) and port>=1024 and port<=4915 do
     {:ok, socket} = :gen_tcp.connect(host, port, [:binary, packet: :line, active: false])
     Logger.info("Connected to #{host}:#{port}")
     :timer.sleep(100)
@@ -35,7 +35,7 @@ defmodule TCPClient do
   defp server_message_loop(socket) do
     case :gen_tcp.recv(socket, 0) do
       {:ok, data} ->
-        IO.puts("#{data|>String.trim}")
+        IO.puts("#{data}")
         server_message_loop(socket)
       {:error, :closed} ->
         Logger.info("Server closed the connection")
