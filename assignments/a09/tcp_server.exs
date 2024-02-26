@@ -204,8 +204,10 @@ defmodule TCPServer do
       [{candidate_socket, _candidate_name}] ->
         broadcast_message(
           client_socket,
-          "KICK USER: #{name} by #{client_name}"
+          "KICK USER: #{name} by #{client_name}",
+          MapSet.new([client_socket, candidate_socket])
         )
+        write_line(candidate_socket, "KICKED OUT: #{client_name} kicked you out of the chat!")
 
         :gen_tcp.shutdown(candidate_socket, :write)
         :ok
@@ -242,7 +244,8 @@ end
 Application.ensure_all_started([:wx, :runtime_tools, :observer])
 :observer.start()
 
+IO.puts("Press enter to exit")
 TCPServer.start(4000)
-IO.gets("Press enter to exit\n")
+IO.gets("")
 # Cleanup
 :ets.delete(:connected_client_names)

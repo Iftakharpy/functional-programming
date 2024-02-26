@@ -17,9 +17,10 @@ defmodule TCPClient do
     end
 
     receiver = spawn_link(fn -> server_message_loop(socket) end)
-    _sender = spawn_link(fn -> user_input_loop(socket) end)
+    sender = spawn_link(fn -> user_input_loop(socket) end)
 
     wait_until_process_dies(receiver)
+    Process.exit(sender, :normal)
   end
 
   defp init_socket_connection_with_name(socket) do
@@ -27,17 +28,23 @@ defmodule TCPClient do
       {:ok, "What's your name?\n"} ->
         name = IO.gets("What's your name? ") |> String.trim()
         :gen_tcp.send(socket, "#{name}\n")
-        case read_line(socket) do
-          :ok -> init_socket_connection_with_name(socket)
-          :error -> :error
-        end
 
-      {:ok, "OK: Name accepted.\n"} ->
-        :ok
+        case read_line(socket) do
+          {:ok, data} ->
+            case data do
+              "OK: Name accepted.\n" -> :ok
+              msg ->
+                IO.write(msg)
+                init_socket_connection_with_name(socket)
+            end
+
+          :error ->
+            :error
+        end
 
       {:ok, msg} ->
         Logger.error(msg)
-        :error
+        :ok
 
       {:error, :closed} ->
         Logger.error("Server closed the connection")
@@ -62,8 +69,7 @@ defmodule TCPClient do
   defp read_line(socket) do
     case :gen_tcp.recv(socket, 0) do
       {:ok, data} ->
-        data |> String.trim() |> IO.puts()
-        :ok
+        {:ok, data}
 
       {:error, reason} ->
         "Error: #{reason}" |> Logger.error()
@@ -73,7 +79,9 @@ defmodule TCPClient do
 
   defp server_message_loop(socket) do
     case read_line(socket) do
-      :ok -> server_message_loop(socket)
+      {:ok, data} ->
+        IO.write(data)
+        server_message_loop(socket)
       :error -> nil
     end
   end
