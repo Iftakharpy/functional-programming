@@ -205,7 +205,7 @@ defmodule TCPServer do
         broadcast_message(
           client_socket,
           "KICK USER: #{name} by #{client_name}",
-          MapSet.new([client_socket])
+          MapSet.new([client_socket, candidate_socket])
         )
         write_line(candidate_socket, "KICKED OUT: #{client_name} kicked you out of the chat!")
 

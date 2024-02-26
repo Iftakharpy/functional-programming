@@ -34,7 +34,7 @@ defmodule TCPClient do
             case data do
               "OK: Name accepted.\n" -> :ok
               msg ->
-                IO.write(msg)
+                Logger.error(msg)
                 init_socket_connection_with_name(socket)
             end
 
