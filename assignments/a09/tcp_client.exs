@@ -87,14 +87,15 @@ defmodule TCPClient do
   end
 
   defp user_input_loop(socket) do
-    :timer.sleep(100)
-    message = IO.gets("> ") |> String.trim()
+    :timer.sleep(25)
+    message = IO.gets("> ")
+    without_last_byte = String.slice(message, 0, max(byte_size(message)-1, 0))
 
-    if message == "exit" do
+    if String.starts_with?(message, "exit") do
       :gen_tcp.close(socket)
       Process.exit(self(), :normal)
     else
-      :gen_tcp.send(socket, message <> "\n")
+      :gen_tcp.send(socket, without_last_byte <> "\n")
       user_input_loop(socket)
     end
   end

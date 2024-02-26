@@ -125,7 +125,8 @@ defmodule TCPServer do
               write_line(client_socket, "ERROR (OCCURRED WHILE PARSING): #{reason}")
           end
         else
-          message = client_name <> ": " <> data |> String.trim()
+          without_last_byte = String.slice(data, 0, max(byte_size(data)-1, 0))
+          message = client_name <> ": " <> without_last_byte
           broadcast_message(client_socket, message, MapSet.new([client_socket]))
         end
 
