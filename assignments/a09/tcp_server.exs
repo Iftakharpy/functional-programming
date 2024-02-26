@@ -64,7 +64,7 @@ defmodule TCPServer do
 
       true ->
         # Ask for the client's name and wait for a response for 1 minute
-        :gen_tcp.send(client_socket, "What's your name?\n")
+        write_line(client_socket, "What's your name?")
 
         case :gen_tcp.recv(client_socket, 0, :timer.minutes(1)) do
           {:ok, name} ->
@@ -125,7 +125,8 @@ defmodule TCPServer do
               write_line(client_socket, "ERROR (OCCURRED WHILE PARSING): #{reason}")
           end
         else
-          broadcast_message(client_socket, "#{client_name}: #{data}", MapSet.new([client_socket]))
+          message = client_name <> ": " <> data |> String.trim()
+          broadcast_message(client_socket, message, MapSet.new([client_socket]))
         end
 
         serve(client_socket, client_name)
@@ -192,8 +193,7 @@ defmodule TCPServer do
 
     broadcast_message(
       client_socket,
-      "SET NAME: #{client_name} -> #{name}",
-      MapSet.new([client_socket])
+      "SET NAME: #{client_name} -> #{name}"
     )
 
     :ok
@@ -205,7 +205,7 @@ defmodule TCPServer do
         broadcast_message(
           client_socket,
           "KICK USER: #{name} by #{client_name}",
-          MapSet.new([client_socket, candidate_socket])
+          MapSet.new([client_socket])
         )
         write_line(candidate_socket, "KICKED OUT: #{client_name} kicked you out of the chat!")
 
@@ -226,7 +226,7 @@ defmodule TCPServer do
   end
 
   defp write_line(socket, text) do
-    :gen_tcp.send(socket, "#{text}\n")
+    :gen_tcp.send(socket, text <> "\n")
   end
 
   defp broadcast_message(_client_socket, msg, exclude_sockets \\ MapSet.new()) do

@@ -94,7 +94,7 @@ defmodule TCPClient do
       :gen_tcp.close(socket)
       Process.exit(self(), :normal)
     else
-      :gen_tcp.send(socket, "#{message}\n")
+      :gen_tcp.send(socket, message <> "\n")
       user_input_loop(socket)
     end
   end
