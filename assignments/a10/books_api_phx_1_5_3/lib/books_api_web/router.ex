@@ -7,6 +7,8 @@ defmodule BooksApiWeb.Router do
 
   scope "/api", BooksApiWeb do
     pipe_through :api
+
+    resources "/books", BookController, except: [:new, :edit]
   end
 
   # Enables LiveDashboard only for development
@@ -24,4 +26,5 @@ defmodule BooksApiWeb.Router do
       live_dashboard "/dashboard", metrics: BooksApiWeb.Telemetry
     end
   end
+
 end
