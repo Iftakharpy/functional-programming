@@ -1,0 +1,56 @@
+###
+
+# LIST 
+GET http://localhost:4000/api/books
+
+###
+
+# GET BY ID
+GET http://localhost:4000/api/books/5
+
+###
+
+# CREATE
+POST http://localhost:4000/api/books/
+Content-Type: application/json
+
+{
+	"book": {
+		"title": "The adventures of pinocchio",
+		"isbn": "0-520-24686-1",
+		"price": 11.59,
+		"description": "It is about the mischievous adenvtures of an animated marionette named Pinocchio and his father, a poor woodcarver named Geppetto.",
+		"authors": ["Carlo Collodi", "Enrico Mazzanti"]
+	}
+}
+
+###
+
+# PUT
+PUT http://localhost:4000/api/books/5
+Content-Type: application/json
+
+{
+	"book": {
+		"price": 22
+	}
+}
+
+###
+
+# PATCH
+PATCH http://localhost:4000/api/books/5
+Content-Type: application/json
+
+{
+	"book": {
+		"price": 33
+	}
+}
+
+### 
+
+# DELETE
+DELETE http://localhost:4000/api/books/5
+
+###
