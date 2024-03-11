@@ -6,7 +6,7 @@ GET http://localhost:4000/api/books
 ###
 
 # GET BY ID
-GET http://localhost:4000/api/books/5
+GET http://localhost:4000/api/books/1
 
 ###
 
@@ -27,7 +27,7 @@ Content-Type: application/json
 ###
 
 # PUT
-PUT http://localhost:4000/api/books/5
+PUT http://localhost:4000/api/books/1
 Content-Type: application/json
 
 {
@@ -39,7 +39,7 @@ Content-Type: application/json
 ###
 
 # PATCH
-PATCH http://localhost:4000/api/books/5
+PATCH http://localhost:4000/api/books/1
 Content-Type: application/json
 
 {
@@ -51,6 +51,6 @@ Content-Type: application/json
 ### 
 
 # DELETE
-DELETE http://localhost:4000/api/books/5
+DELETE http://localhost:4000/api/books/1
 
 ###
